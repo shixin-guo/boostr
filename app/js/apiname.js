@@ -1,49 +1,77 @@
-var BfsApiName = BfsApiName || {};
+import { initJQueryExtensions } from './scripts.js';
 
-var DeveloperNameInputElement = DeveloperNameInputElement || {};
-DeveloperNameInputElement.setName = function(d, c, g) {
-  d = d.value;
-  var a = "",
-    e = !1,
-    f = !1;
-  if (null !== c && 0 == c.value.length && 0 < d.length) {
-    for (i = 0; i < d.length; i++) {
-      var b = d.charAt(i);
-      "a" <= b && "z" >= b || "A" <= b && "Z" >= b || "0" <= b && "9" >= b ? (!e && ("0" <= b && "9" >= b) && (a += "X"), a += b, e = !0, f = !1) : e && !f && (a += "_", f = !0)
-    }
-    e ? (c.maxLength && 0 < c.maxLength && (a = a.substr(0, c.maxLength)), c.value = f ? a.substring(0, a.length - 1) : a) : c.value = g
+// Initialize jQuery extensions
+initJQueryExtensions();
+
+const setDeveloperName = (sourceElement, targetElement, defaultValue) => {
+  const sourceValue = sourceElement.value;
+  if (!targetElement || targetElement.value.length > 0 || !sourceValue) {
+    return true;
   }
-  return !0
+
+  let result = '';
+  let hasValidChar = false;
+  let lastWasUnderscore = false;
+
+  for (let i = 0; i < sourceValue.length; i++) {
+    const char = sourceValue.charAt(i);
+    const isAlphaNumeric = /[a-zA-Z0-9]/.test(char);
+
+    if (isAlphaNumeric) {
+      if (!hasValidChar && /[0-9]/.test(char)) {
+        result += 'X';
+      }
+      result += char;
+      hasValidChar = true;
+      lastWasUnderscore = false;
+    } else if (hasValidChar && !lastWasUnderscore) {
+      result += '_';
+      lastWasUnderscore = true;
+    }
+  }
+
+  if (hasValidChar) {
+    if (targetElement.maxLength > 0) {
+      result = result.substr(0, targetElement.maxLength);
+    }
+    targetElement.value = lastWasUnderscore ? result.slice(0, -1) : result;
+  } else {
+    targetElement.value = defaultValue;
+  }
+
+  return true;
 };
 
-BfsApiName.init = function() {
-  if ($('input#MasterLabel').size() === 0 ||
-      ($('input#DeveloperName').size() === 0 &&
-        $('input#Name').size() === 0) || 
-      ($('input#DeveloperName').size() > 0 &&
-        $('input#DeveloperName').is(':disabled')) ||
-      ($('input#Name').size() > 0 &&
-        $('input#Name').is(':disabled'))) {
+const init = () => {
+  const masterLabel = $('input#MasterLabel');
+  const developerName = $('input#DeveloperName');
+  const name = $('input#Name');
+
+  if (masterLabel.size() === 0 ||
+      (developerName.size() === 0 && name.size() === 0) ||
+      (developerName.size() > 0 && developerName.is(':disabled')) ||
+      (name.size() > 0 && name.is(':disabled'))) {
     return;
   }
-  
-  $('input#MasterLabel').blur(function() {
-    if ($('input#DeveloperName').size() === 1) {
-      DeveloperNameInputElement.setName(this, document.getElementById('DeveloperName'), 'Field1');
-      var val = $('input#DeveloperName').val();
-      $('input#DeveloperName').val(val.replace(/_/g, ''));
-    } else if ($('input#Name').size() === 1) {
-      DeveloperNameInputElement.setName(this, document.getElementById('Name'), 'Field1');
-      var val = $('input#Name').val();
-      $('input#Name').val(val.replace(/ /g, ''));
+
+  masterLabel.blur(function() {
+    if (developerName.size() === 1) {
+      setDeveloperName(this, document.getElementById('DeveloperName'), 'Field1');
+      const val = developerName.val();
+      developerName.val(val.replace(/_/g, ''));
+    } else if (name.size() === 1) {
+      setDeveloperName(this, document.getElementById('Name'), 'Field1');
+      const val = name.val();
+      name.val(val.replace(/ /g, ''));
     }
   });
 };
 
+// Initialize if enabled in settings
 chrome.storage.sync.get({
   'apiname': false
-}, function(item) {
+}, (item) => {
   if (item.apiname === true) {
-    BfsApiName.init();
+    init();
   }
 });
