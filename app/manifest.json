@@ -29,17 +29,11 @@
       ],
       "js": [
         "js/jquery.min.js",
-        {
-          "matches": ["<all_urls>"],
-          "type": "module",
-          "resources": [
-            "js/scripts.js",
-            "js/setupsearch.js",
-            "js/setupcheckall.js",
-            "js/flowerrorlink.js",
-            "js/listviewrowclick.js"
-          ]
-        }
+        "js/scripts.js",
+        "js/setupsearch.js",
+        "js/setupcheckall.js",
+        "js/flowerrorlink.js",
+        "js/listviewrowclick.js"
       ],
       "all_frames": true
     },
@@ -51,11 +45,7 @@
         "https://*.salesforce-setup.com/*AddToPackageFromChangeMgmtUi*"
       ],
       "js": [
-        {
-          "matches": ["<all_urls>"],
-          "type": "module",
-          "resources": ["js/changeset.js"]
-        }
+        "js/changeset.js"
       ],
       "css": [
         "css/changeset.css"
@@ -70,11 +60,7 @@
         "https://*.salesforce-setup.com/*FieldSetEditor*"
       ],
       "js": [
-        {
-          "matches": ["<all_urls>"],
-          "type": "module",
-          "resources": ["js/fieldset.js"]
-        }
+        "js/fieldset.js"
       ],
       "all_frames": true
     },
@@ -94,11 +80,7 @@
         "https://*.salesforce-setup.com/*101*"
       ],
       "js": [
-        {
-          "matches": ["<all_urls>"],
-          "type": "module",
-          "resources": ["js/apiname.js"]
-        }
+        "js/apiname.js"
       ],
       "all_frames": true
     },
