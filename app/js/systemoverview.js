@@ -1,5 +1,9 @@
-var BfsSystemOverview = BfsSystemOverview || {};
-BfsSystemOverview.LimitInfoMap = {
+import { initJQueryExtensions } from './scripts.js';
+
+// Initialize jQuery extensions
+initJQueryExtensions();
+
+const LimitInfoMap = {
     ConcurrentAsyncGetReportInstances: { Title: "Concurrent Async Get Report Instances", Description: "Concurrent REST API requests for results of asynchronous report runs" },
     ConcurrentSyncReportRuns: { Title: "Concurrent Sync Report Runs", Description: "Concurrent synchronous report runs via REST API" },
     DailyAsyncApexExecutions: { Title: "Daily Async Apex Executions", Description: "Daily asynchronous Apex method executions (batch Apex, future methods, queueable Apex, and scheduled Apex)" },
@@ -22,112 +26,111 @@ BfsSystemOverview.LimitInfoMap = {
     StreamingApiConcurrentClients: { Title: "Streaming Api Concurrent Clients" }
 };
 
-BfsSystemOverview.init = function () {
-    var sessionId = BfsSystemOverview.getSessionId();
-    BfsSystemOverview.getOrgLimits(sessionId);
-}
-
-BfsSystemOverview.getSessionId = function () {
+const getSessionId = () => {
     return document.cookie.match("sid=([^;]*)")[1];
-}
+};
 
-BfsSystemOverview.getOrgLimits = function (sessionId) {
-    $.ajax({
+const getOrgLimits = (sessionId) => {
+    return $.ajax({
         url: '/services/data/v40.0/limits/',
-        headers: { 'Authorization': 'Bearer ' + sessionId }
-    })
-    .always(BfsSystemOverview.processOrgLimitsResponse);
-}
+        headers: { 'Authorization': `Bearer ${sessionId}` }
+    });
+};
 
-BfsSystemOverview.processOrgLimitsResponse = function (data, textStatus, jqXHR) {
-    if (textStatus == "success") {
-        BfsSystemOverview.showOrgLimitsUI(data);
+const processOrgLimitsResponse = (data, textStatus, jqXHR) => {
+    if (textStatus === "success") {
+        showOrgLimitsUI(data);
     } else {
-        console.log(jqXHR)
+        console.log(jqXHR);
     }
-}
+};
 
-BfsSystemOverview.showOrgLimitsUI = function (orgLimits) {
-    var orgLimitsUI = '<div class="panel-container"><span><div class="panel">';
-    orgLimitsUI += '<div class="top-line"><h2>Other Org Limits </h2><img src="https://github.com/mattsimonis/boostr/blob/master/app/icon.png?raw=true" style="height:32px; width:32px; padding-left: 20px;" title="Provided by Boostr for Salesforce" /></div><div class="content"><div class="panelContent">';
+const showOrgLimitsUI = (orgLimits) => {
+    const alreadyShownLimits = ['DailyApiRequests', 'DataStorageMB', 'FileStorageMB'];
+    const numberFormatter = new Intl.NumberFormat();
+    let orgLimitsUI = `
+        <div class="panel-container">
+            <span>
+                <div class="panel">
+                    <div class="top-line">
+                        <h2>Other Org Limits</h2>
+                        <img src="https://github.com/mattsimonis/boostr/blob/master/app/icon.png?raw=true" 
+                             style="height:32px; width:32px; padding-left: 20px;" 
+                             title="Provided by Boostr for Salesforce" />
+                    </div>
+                    <div class="content">
+                        <div class="panelContent">`;
 
-    var alreadyShownLimits = ['DailyApiRequests', 'DataStorageMB', 'FileStorageMB'];
-    var numberFormatter = new Intl.NumberFormat();
+    Object.keys(orgLimits).forEach((limitName, index) => {
+        if (alreadyShownLimits.includes(limitName)) return;
 
-    Object.keys(orgLimits).forEach(function(limitName, index) {
-        if (alreadyShownLimits.indexOf(limitName) != -1) {
-            return;
-        }
+        const limitInfo = LimitInfoMap[limitName];
+        if (!limitInfo) return;
 
-        var limitInfo = BfsSystemOverview.LimitInfoMap[limitName];
+        const limitRemaining = orgLimits[limitName].Remaining;
+        const limitMax = orgLimits[limitName].Max;
+        const limitUsed = limitMax - limitRemaining;
+        const percentageUsed = Math.round((limitUsed / limitMax) * 100);
+        const percentageAvailable = 100 - percentageUsed;
 
-        if (limitInfo == null) {
-            return;
-        }
+        const borderTopClass = index === 0 ? '' : 'border-top';
+        const panelWarningClass = percentageUsed >= 80 ? 'usage-warn' : '';
+        const barPositiveWarnClass = percentageUsed >= 80 ? 'bar-positive-warn' : '';
 
-        var limitRemaining = orgLimits[limitName].Remaining;
-        var limitMax = orgLimits[limitName].Max;
-        var limitUsed = limitMax - limitRemaining;
-        var percentageUsed = Math.round((limitUsed / limitMax) * 100);
-        var percentageAvailable = 100 - percentageUsed;
-
-
-        var borderTopClass = 'border-top';
-        var panelWarningClass = '';
-        var barPositiveWarnClass = '';
-
-        if (index == 0) {
-            borderTopClass = '';
-        }
-
-        if (percentageUsed >= 80) {
-            panelWarningClass = 'usage-warn';
-            barPositiveWarnClass = 'bar-positive-warn';
-        }
-
-        orgLimitsUI += '<div class="panel-content-item ' + borderTopClass + ' ' + panelWarningClass + '">';
-
-        orgLimitsUI += '<div class="panelLeft">';
-
-        orgLimitsUI += '<div class="type"><span class="title">' + limitInfo.Title +
-                       '</span>';
-
-        if (limitInfo.Description) {
-            orgLimitsUI += '<div class="mouseOverInfoOuter" onfocus="addMouseOver(this)" onmouseover="addMouseOver(this)" tabindex="0">'
-                              + '<img src="/img/s.gif" alt class="infoIcon" title>'
-                              + '<div class="mouseOverInfo" style="display:none; opacity: -0.2; left: 21px;">'
-                                  + '<div class="body">' + limitInfo.Description + '</div>'
-                              + '</div>'
-                        + '</div>';
-        }
-
-        orgLimitsUI += '</div>';
-
-        orgLimitsUI += '<div class="datalink"><div class="num">' + numberFormatter.format(limitUsed) + '</div></div>';
-
-        orgLimitsUI += '<div class="floatClear" /></div>';
-
-        orgLimitsUI += '<div class="panelRight">';
-
-        orgLimitsUI += '<div class="visual"><span><div class="bar-container"><div class="bar">' +
-                         '<div class="bar-positive ' + barPositiveWarnClass + '" style="width:' + percentageUsed + 'px;"></div>' +
-                         '<div class="bar-negative" style="width:' + percentageAvailable + 'px;"></div>'
-            + '</div></div>  </span></div>';
-
-        orgLimitsUI += '<span><div align="right" class="desc"> <span class="desc-num">' + percentageUsed + '%</span>(maximum ' + numberFormatter.format(limitMax) + ')<br /></div></span>';
-
-        orgLimitsUI += '</div><div class="floatClear" />';
-
-        orgLimitsUI += '</div>';
-
-        console.log(limitName);
+        orgLimitsUI += `
+            <div class="panel-content-item ${borderTopClass} ${panelWarningClass}">
+                <div class="panelLeft">
+                    <div class="type">
+                        <span class="title">${limitInfo.Title}</span>
+                        ${limitInfo.Description ? `
+                            <div class="mouseOverInfoOuter" onfocus="addMouseOver(this)" onmouseover="addMouseOver(this)" tabindex="0">
+                                <img src="/img/s.gif" alt class="infoIcon" title>
+                                <div class="mouseOverInfo" style="display:none; opacity: -0.2; left: 21px;">
+                                    <div class="body">${limitInfo.Description}</div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="datalink">
+                        <div class="num">${numberFormatter.format(limitUsed)}</div>
+                    </div>
+                    <div class="floatClear"></div>
+                </div>
+                <div class="panelRight">
+                    <div class="visual">
+                        <span>
+                            <div class="bar-container">
+                                <div class="bar">
+                                    <div class="bar-positive ${barPositiveWarnClass}" style="width:${percentageUsed}px;"></div>
+                                    <div class="bar-negative" style="width:${percentageAvailable}px;"></div>
+                                </div>
+                            </div>
+                        </span>
+                    </div>
+                    <span>
+                        <div align="right" class="desc">
+                            <span class="desc-num">${percentageUsed}%</span>
+                            (maximum ${numberFormatter.format(limitMax)})<br />
+                        </div>
+                    </span>
+                </div>
+                <div class="floatClear"></div>
+            </div>`;
     });
 
-
-
-    orgLimitsUI += '</div></div></div></span></div>';
+    orgLimitsUI += `
+                        </div>
+                    </div>
+                </div>
+            </span>
+        </div>`;
 
     $('#panel-board').append(orgLimitsUI);
-}
+};
 
-BfsSystemOverview.init();
+const init = () => {
+    const sessionId = getSessionId();
+    getOrgLimits(sessionId).always(processOrgLimitsResponse);
+};
+
+init();
