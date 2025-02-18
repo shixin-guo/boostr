@@ -1,43 +1,28 @@
-$(function() {
-  $('a.modalLink').click(function(e) {
-    e.preventDefault();
-  });
-});
+import { waitForElement } from './utils.js';
 
-// Saves options to chrome.storage
-function save_options() {
-  var changeset = document.getElementById('changeset').checked;
-  var fieldset = document.getElementById('fieldset').checked;
-  var setupsearch = document.getElementById('setupsearch').checked;
-  var apiname = document.getElementById('apiname').checked;
-  var setupcheckall = document.getElementById('setupcheckall').checked;
-  var layoutuncheckall = document.getElementById('layoutuncheckall').checked;
-  var selectfailedtests = document.getElementById('selectfailedtests').checked;
-  var fieldhistorynumallowedfields = document.getElementById('fieldhistorynumallowedfields').value;
+const saveOptions = async () => {
+  const options = {
+    changeset: document.getElementById('changeset').checked,
+    fieldset: document.getElementById('fieldset').checked,
+    setupsearch: document.getElementById('setupsearch').checked,
+    apiname: document.getElementById('apiname').checked,
+    setupcheckall: document.getElementById('setupcheckall').checked,
+    layoutuncheckall: document.getElementById('layoutuncheckall').checked,
+    selectfailedtests: document.getElementById('selectfailedtests').checked,
+    fieldhistorynumallowedfields: document.getElementById('fieldhistorynumallowedfields').value
+  };
+
+  await chrome.storage.sync.set(options);
   
-  chrome.storage.sync.set({
-    changeset: changeset,
-    fieldset: fieldset,
-    setupsearch: setupsearch,
-    apiname: apiname,
-    setupcheckall: setupcheckall,
-    layoutuncheckall: layoutuncheckall,
-    selectfailedtests: selectfailedtests,
-    fieldhistorynumallowedfields: fieldhistorynumallowedfields
-  }, function() {
-    // Update status to let user know options were saved.
-    var status = document.getElementById('status');
-    status.style.display = 'block';
-    setTimeout(function() {
-      status.style.display = 'none';
-    }, 2000);
-  });
-}
+  const status = document.getElementById('status');
+  status.style.display = 'block';
+  setTimeout(() => {
+    status.style.display = 'none';
+  }, 2000);
+};
 
-// Restores select box and checkbox state using the preferences
-// stored in chrome.storage.
-function restore_options() {
-  chrome.storage.sync.get({
+const restoreOptions = async () => {
+  const defaults = {
     changeset: true,
     fieldset: true,
     setupsearch: true,
@@ -46,17 +31,32 @@ function restore_options() {
     layoutuncheckall: false,
     selectfailedtests: true,
     fieldhistorynumallowedfields: 20
-  }, function (items) {
-    document.getElementById('changeset').checked = items.changeset;
-    document.getElementById('fieldset').checked = items.fieldset;
-    document.getElementById('setupsearch').checked = items.setupsearch;
-    document.getElementById('apiname').checked = items.apiname;
-    document.getElementById('setupcheckall').checked = items.setupcheckall;
-    document.getElementById('layoutuncheckall').checked = items.layoutuncheckall;
-    document.getElementById('selectfailedtests').checked = items.selectfailedtests;
-    document.getElementById('fieldhistorynumallowedfields').value = items.fieldhistorynumallowedfields;
-  });
-}
+  };
 
-document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('save').addEventListener('click', save_options);
+  const items = await chrome.storage.sync.get(defaults);
+  
+  Object.entries(items).forEach(([key, value]) => {
+    const element = document.getElementById(key);
+    if (element) {
+      if (element.type === 'checkbox') {
+        element.checked = value;
+      } else {
+        element.value = value;
+      }
+    }
+  });
+};
+
+// Initialize options and event listeners
+const init = async () => {
+  await restoreOptions();
+  const saveButton = await waitForElement('save');
+  saveButton.addEventListener('click', saveOptions);
+};
+
+document.addEventListener('DOMContentLoaded', init);
+
+// Keep jQuery modal functionality
+$(function() {
+  $('a.modalLink').click((e) => e.preventDefault());
+});
