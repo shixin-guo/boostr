@@ -10,7 +10,19 @@
   "web_accessible_resources": [{
     "resources": [
       "js/fieldsetinject.js",
-      "js/setupcheckallinject.js"
+      "js/setupcheckallinject.js",
+      "js/scripts.js",
+      "js/setupsearch.js",
+      "js/setupcheckall.js",
+      "js/flowerrorlink.js",
+      "js/listviewrowclick.js",
+      "js/changeset.js",
+      "js/fieldset.js",
+      "js/apiname.js",
+      "js/systemoverview.js",
+      "js/selectfailedtests.js",
+      "js/fieldhistorycount.js",
+      "js/addtolayout.js"
     ],
     "matches": [
       "https://*.salesforce.com/*",
@@ -29,11 +41,26 @@
       ],
       "js": [
         "js/jquery.min.js",
-        "js/scripts.js",
-        "js/setupsearch.js",
-        "js/setupcheckall.js",
-        "js/flowerrorlink.js",
-        "js/listviewrowclick.js"
+        {
+          "type": "module",
+          "resource": "js/scripts.js"
+        },
+        {
+          "type": "module",
+          "resource": "js/setupsearch.js"
+        },
+        {
+          "type": "module",
+          "resource": "js/setupcheckall.js"
+        },
+        {
+          "type": "module",
+          "resource": "js/flowerrorlink.js"
+        },
+        {
+          "type": "module",
+          "resource": "js/listviewrowclick.js"
+        }
       ],
       "all_frames": true
     },
@@ -45,7 +72,10 @@
         "https://*.salesforce-setup.com/*AddToPackageFromChangeMgmtUi*"
       ],
       "js": [
-        "js/changeset.js"
+        {
+          "type": "module",
+          "resource": "js/changeset.js"
+        }
       ],
       "css": [
         "css/changeset.css"
@@ -60,7 +90,10 @@
         "https://*.salesforce-setup.com/*FieldSetEditor*"
       ],
       "js": [
-        "js/fieldset.js"
+        {
+          "type": "module",
+          "resource": "js/fieldset.js"
+        }
       ],
       "all_frames": true
     },
@@ -80,7 +113,10 @@
         "https://*.salesforce-setup.com/*101*"
       ],
       "js": [
-        "js/apiname.js"
+        {
+          "type": "module",
+          "resource": "js/apiname.js"
+        }
       ],
       "all_frames": true
     },
@@ -92,7 +128,10 @@
         "https://*.salesforce-setup.com/*FieldHistoryTracking*"
       ],
       "js": [
-        "js/fieldhistorycount.js"
+        {
+          "type": "module",
+          "resource": "js/fieldhistorycount.js"
+        }
       ]
     },
     {
@@ -103,7 +142,10 @@
         "https://*.salesforce-setup.com/*NewCustomFieldStageManager*"
       ],
       "js": [
-        "js/addtolayout.js"
+        {
+          "type": "module",
+          "resource": "js/addtolayout.js"
+        }
       ],
       "all_frames": true
     },
@@ -115,7 +157,10 @@
         "https://*.salesforce-setup.com/*systemOverview*"
       ],
       "js": [
-        "js/systemoverview.js"
+        {
+          "type": "module",
+          "resource": "js/systemoverview.js"
+        }
       ],
       "all_frames": true
     },
@@ -127,7 +172,10 @@
         "https://*.salesforce-setup.com/*ApexTestQueuePage*"
       ],
       "js": [
-        "js/selectfailedtests.js"
+        {
+          "type": "module",
+          "resource": "js/selectfailedtests.js"
+        }
       ],
       "all_frames": true
     }
